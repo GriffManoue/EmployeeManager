@@ -14,17 +14,20 @@ namespace EmployeeManager.Model.LogicServices
 
         private readonly ILogger<EmployeeLogicService> _logger;
         private readonly IRepository<Employee> _repository;
+        private readonly IPasswordService<Employee> _passwordService;
 
-        public EmployeeLogicService(ILogger<EmployeeLogicService> logger, IRepository<Employee> repository)
+        public EmployeeLogicService(ILogger<EmployeeLogicService> logger, IRepository<Employee> repository, IPasswordService<Employee> passwordService)
         {
             _logger = logger;
             _repository = repository;
+            _passwordService = passwordService;
         }
 
         public async Task<Employee> AddAsync(Employee entity)
         {
             try
             {
+                entity.Password = _passwordService.HashPassword(entity,entity.Password);
                 await _repository.InsertAsync(entity);
             }
             catch (EmployeeAlreadyExistsException e) { 

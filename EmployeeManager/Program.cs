@@ -6,6 +6,7 @@ using EmployeeManager.Model.Interfaces;
 using EmployeeManager.Model;
 using EmployeeManager.DataAccess.Interfaces;
 using EmployeeManager.DataAccess;
+using Microsoft.AspNetCore.Identity;
 
 namespace EmployeeManager
 {
@@ -25,6 +26,9 @@ namespace EmployeeManager
 
             builder.Services.AddScoped<ILogicService<Department>, DepartmentLogicService>();      
             builder.Services.AddScoped<IRepository<Department>, DepartmentRepository>();
+
+            builder.Services.AddScoped<IPasswordHasher<Employee>, PasswordHasher<Employee>>();
+            builder.Services.AddScoped<IPasswordService<Employee>, PasswordService>();
 
             builder.Services.AddControllers();
            

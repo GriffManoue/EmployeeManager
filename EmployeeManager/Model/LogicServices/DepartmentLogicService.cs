@@ -48,12 +48,12 @@ namespace EmployeeManager.Model.LogicServices
 
         public async Task<Department> GetByIdAsync(long id)
         {
-            Department? employee = null;
+            Department? department = null;
 
             try
             {
 
-                employee = await _repository.GetByIdAsync(id);
+                department = await _repository.GetByIdAsync(id);
             }
             catch (DepartmentNotFoundException e)
             {
@@ -61,7 +61,7 @@ namespace EmployeeManager.Model.LogicServices
                 _logger.LogError(e.Message, id);
             }
 
-            return employee;
+            return department;
         }
 
         public async Task<IQueryable<Department>> Query(Expression<Func<Department, bool>> predicate)
