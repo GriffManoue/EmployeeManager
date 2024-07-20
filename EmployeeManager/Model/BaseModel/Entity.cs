@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using EmployeeManager.Model.Interfaces;
 using System.Text.Json.Serialization;
 
-namespace EmployeeManager.Model
+namespace EmployeeManager.Model.BaseModel
 {
     public class Entity : IEntity
     {

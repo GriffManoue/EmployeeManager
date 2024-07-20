@@ -7,8 +7,8 @@ namespace EmployeeManager.DataAccess.Interfaces
         public Task<IEnumerable<TData>> GetAllAsync();
         public Task<TData> GetByIdAsync(long id);
         public Task<TData> InsertAsync(TData entity);
-        public Task DeleteAsync(TData entity);
-        public Task UpdateAsync(TData entity);
+        public TData Update(TData entity);
+        public void Delete(TData entity);
         public Task SaveAsync();
         public Task<IQueryable<TData>> Query(Expression<Func<TData, bool>> predicate);
     }

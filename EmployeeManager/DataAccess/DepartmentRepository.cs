@@ -1,7 +1,7 @@
 ﻿using EmployeeManager.Data;
 using EmployeeManager.DataAccess.Interfaces;
 using EmployeeManager.Exceptions;
-using EmployeeManager.Model;
+using EmployeeManager.Model.BaseModel;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -20,77 +20,120 @@ namespace EmployeeManager.DataAccess
 
         public async Task<IEnumerable<Department>> GetAllAsync()
         {
-            return await _context.Department.ToListAsync();
+            try
+            {
+                return await _context.Department.Where(e => e.Active == true).ToListAsync();
+            }
+            catch (ArgumentNullException e)
+            {
+                throw new DataAccessException("The list of departments is null.", e);
+            }
+            catch (OperationCanceledException e)
+            {
+                throw new DataAccessException("The operation was canceled while retrieving the departments.", e);
+            }
+            catch (Exception e)
+            {
+                throw new DataAccessException("An error occurred while retrieving the departments.", e);
+            }
+           
         }
 
         public async Task<Department> GetByIdAsync(long id)
         {
-            var department = await _context.Department.FindAsync(id);
-
-            if (department == null)
+           
+            Department department;
+            try
             {
-                throw new DepartmentNotFoundException("A department with the given id was not found.", id);
+                department = await _context.Department.FindAsync(id);
+                return department;
             }
+            catch (Exception e)
+            {
+                throw new DataAccessException("An error occurred while retrieving the department.", e);
+            }
+          
 
-            return department;
         }
 
         public async Task<Department> InsertAsync(Department entity)
         {
+            Department department;
             
-
-            if (DepartmentExists(entity.Id))
-            {
-
-                throw new DepartmentAlreadyExistsException("A department with the given id already exists.", entity.Id);
-            }
-            var department = _context.Department.Add(entity);
-            await _context.SaveChangesAsync();
-            return department.Entity;
-        }
-
-        public async Task UpdateAsync(Department entity)
-        {
-            _context.Entry(entity).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+               department = (await _context.Department.AddAsync(entity)).Entity;
+            
+                return department;
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception e)
             {
-                if (!DepartmentExists(entity.Id))
-                {
-                    throw new DepartmentNotFoundException("A department with the given id was not found.", entity.Id);
-                }
-                else
-                {
-                    throw new Exception("An error occurred while updating the department.");
-                }
+                throw new DataAccessException("An error occurred while inserting the department.", e);
             }
+
+           
         }
 
-        public async Task DeleteAsync(Department entity)
+        public Department Update(Department entity)
         {
-            var department = await _context.Department.FindAsync(entity.Id);
-            if (department == null)
-            {
-                throw new DepartmentNotFoundException("A department with the given id was not found.", entity.Id);
+            try {
+                _context.Update(entity);
+            }
+            catch (Exception e) {
+                throw new DataAccessException("An error occurred while updating the department.", e);
             }
 
-            _context.Department.Remove(department);
-            await _context.SaveChangesAsync();
+            return entity;
+        }
+
+        public void Delete(Department entity)
+        {
+           try {
+                 _context.Department.Remove(entity);
+            }
+            catch (Exception e) {
+                throw new DataAccessException("An error occurred while deleting the department.", e);
+            }
         }
 
         public async Task SaveAsync()
         {
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException e)
+            {
+                throw new DataAccessException("A concurrency error occurred while saving the department.", e);
+            }
+            catch (DbUpdateException e)
+            {
+                throw new DataAccessException("An error occurred while saving the department.", e);
+            }
+            catch (OperationCanceledException e) { 
+                throw new DataAccessException("The operation was canceled while saving the department.", e);
+            }
+            catch (Exception e)
+            {
+                throw new DataAccessException("An error occurred while saving the department.", e);
+            }
         }
 
 
         public async Task<IQueryable<Department>> Query(Expression<Func<Department, bool>> predicate)
         {
-            return await Task.FromResult(_context.Department.Where(predicate));
+            try
+            {
+                return await Task.FromResult(_context.Department.Where(predicate));
+            }
+            catch (ArgumentNullException e) {
+            throw new DataAccessException("The predicate is null.", e);
+            }
+            catch (Exception e)
+            {
+                throw new DataAccessException("An error occurred while querying the departments.", e);
+            }
+            
         }
 
         protected virtual void Dispose(bool disposing)
@@ -112,9 +155,6 @@ namespace EmployeeManager.DataAccess
             GC.SuppressFinalize(this);
         }
 
-        private bool DepartmentExists(long id)
-        {
-            return _context.Department.Any(e => e.Id == id);
-        }
+        
     }
 }

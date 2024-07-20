@@ -6,8 +6,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EmployeeManager.Data;
-using EmployeeManager.Model;
 using EmployeeManager.Model.Interfaces;
+using EmployeeManager.Model.BaseModel;
+using EmployeeManager.Model;
 
 namespace EmployeeManager.Controllers
 {
@@ -19,14 +20,14 @@ namespace EmployeeManager.Controllers
 
         public DepartmentsController(ILogicService<Department> logicService)
         {
-           _logicService = logicService;
+            _logicService = logicService;
         }
 
         // GET: api/Departments
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Department>>> GetDepartment()
         {
-            var query = await _logicService.Query(e => true);
+            var query = await _logicService.Query(new QueryRequest("active", "true"));
             return query.ToList();
         }
 
@@ -34,41 +35,22 @@ namespace EmployeeManager.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Department>> GetDepartment(long id)
         {
-           var department = await _logicService.GetByIdAsync(id);
+            try {
 
-            if (department == null)
-            {
-                return NotFound();
+                var department = await _logicService.GetByIdAsync(id);
+                return department;
             }
+            catch (Exception e) {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
 
-            return department;
+            }
         }
 
         //GET: api/Departments/Query
         [HttpGet("Query")]
-        public async Task<ActionResult<IEnumerable<Department>>> QueryDepartment([FromQuery] string attribute, [FromQuery] string value)
+        public async Task<ActionResult<IEnumerable<Department>>> QueryDepartment([FromQuery] QueryRequest request)
         {
-            IEnumerable<Department> query;
-
-            switch (attribute.ToLower())
-            {
-                case "name":
-                    query = await _logicService.Query(d => d.Name.Contains(value));
-                    break;
-                case "id":
-                    query = await _logicService.Query(d => d.Id.Equals(value));
-                    break;
-                case "abbreviation":
-                    query = await _logicService.Query(d => d.Abbreviation.Contains(value));
-                    break;
-                // Add more cases for other department-specific attributes you want to filter by
-                case "active":
-                    query = await _logicService.Query(d => d.Active.ToString().Contains(value));
-                    break;
-                default:
-                    return BadRequest("Invalid attribute specified.");
-            }
-
+            var query = await _logicService.Query(request);
             return query.ToList();
         }
 
@@ -83,14 +65,12 @@ namespace EmployeeManager.Controllers
                 return BadRequest();
             }
 
-            var entity = await _logicService.UpdateAsync(department);
-
-            if (entity == null)
-            {
-
-                return NotFound();
+            try {
+            
+                var entity = await _logicService.UpdateAsync(department);
+            }catch (Exception e) {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
-
             return NoContent();
         }
 
@@ -99,11 +79,14 @@ namespace EmployeeManager.Controllers
         [HttpPost]
         public async Task<ActionResult<Department>> PostDepartment(Department entity)
         {
-            var department = await _logicService.AddAsync(entity);
+            Department department = null;
 
-            if (department == null) { 
+            try { 
             
-                return BadRequest();
+                department= await _logicService.AddAsync(entity);
+
+            }catch (Exception e) {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
             return CreatedAtAction("GetDepartment", new { id = department.Id }, department);
@@ -113,13 +96,15 @@ namespace EmployeeManager.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteDepartment(long id)
         {
-            var department = await _logicService.GetByIdAsync(id);
-            if (department == null)
-            {
-                return NotFound();
+
+            try {
+            
+                await _logicService.DeleteAsync(id);
+            }catch (Exception e) {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            await _logicService.DeleteAsync(department);
+
             return NoContent();
         }
     }

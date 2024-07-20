@@ -6,8 +6,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using EmployeeManager.Data;
-using EmployeeManager.Model;
 using EmployeeManager.Model.Interfaces;
+using AutoMapper;
+using EmployeeManager.Model.BaseModel;
+using EmployeeManager.Model;
 
 namespace EmployeeManager.Controllers
 {
@@ -17,69 +19,50 @@ namespace EmployeeManager.Controllers
     {
        
         private readonly ILogicService<Employee> _logicService;
+        private readonly IMapper _mapper;
 
-        public EmployeesController(ILogicService<Employee> logicService)
+        public EmployeesController(ILogicService<Employee> logicService, IMapper mapper)
         {
             _logicService = logicService;
+            _mapper = mapper;
         }
 
         // GET: api/Employees
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Employee>>> GetEmployee()
+        public async Task<ActionResult<IEnumerable<EmployeeDTO>>> GetEmployee()
         {
-           var query = await _logicService.Query(e => true);
-           return query.ToList();
-            
+           var query = await _logicService.Query(new QueryRequest("active", "true"));
+            var employeeDTOs = _mapper.Map<IEnumerable<EmployeeDTO>>(query);
+            return Ok(employeeDTOs);
+
         }
 
         // GET: api/Employees/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Employee>> GetEmployee(long id)
+        public async Task<ActionResult<EmployeeDTO>> GetEmployee(long id)
         {
-
-            var employee = await _logicService.GetByIdAsync(id);
-
-            if (employee == null)
-            {
-                return NotFound();
+            try {
+            
+                var employee = await _logicService.GetByIdAsync(id);
+                return _mapper.Map<EmployeeDTO>(employee);
+            }
+            catch (Exception e) {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-           return employee;
+          
         }
+
         //GET: api/Employees/Query
         [HttpGet("Query")]
-        public async Task<ActionResult<IEnumerable<Employee>>> QueryEmployee([FromQuery] string attribute, [FromQuery] string value)
+        public async Task<ActionResult<IEnumerable<EmployeeDTO>>> QueryEmployee([FromQuery] QueryRequest request)
         {
-            IEnumerable<Employee> query;
+            var query = await _logicService.Query(request);
 
-            switch (attribute.ToLower())
-            {
-                case "id":                     
-                    query = await _logicService.Query(e => e.Id.Equals(value));
-                    break;
-                case "name":
-                    query = await _logicService.Query(e => e.Name.Contains(value));
-                    break;
-                case "position":
-                    query = await _logicService.Query(e => e.Position.Contains(value));
-                    break;
-                case "department":
-                    query = await _logicService.Query(e => e.Department.Id.Equals(value));
-                    break;
-                case"supervisorID":
-                        query = await _logicService.Query(e => e.Supervisor.Id.Equals(value));
-                    break;
-                case "username":
-                        query = await _logicService.Query(e => e.Username.Contains(value));
-                    break;
-                case "active":
-                        query = await _logicService.Query(e => e.Active.ToString().Contains(value));
-                    break;
-                default:
-                    return BadRequest("Invalid attribute specified.");
-            }
+            var employeeDTOs = _mapper.Map<IEnumerable<EmployeeDTO>>(query);
+            return Ok(employeeDTOs);
 
-            return query.ToList();
+
         }
 
 
@@ -93,12 +76,11 @@ namespace EmployeeManager.Controllers
                 return BadRequest();
             }
 
-            var entity = await _logicService.UpdateAsync(employee);
-
-            if (entity == null) { 
-            
-                return NotFound();
-            }           
+            try {
+                var entity = await _logicService.UpdateAsync(employee);
+            }catch (Exception e) {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
 
             return NoContent();
         }
@@ -106,14 +88,15 @@ namespace EmployeeManager.Controllers
         // POST: api/Employees
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Employee>> PostEmployee(Employee entity)
+        public async Task<ActionResult<EmployeeDTO>> PostEmployee(Employee entity)
         {
-            var employee = await _logicService.AddAsync(entity);
 
-            if (employee == null)
-            {
+            Employee employee = null;
 
-                return BadRequest();
+            try {
+                employee = await _logicService.AddAsync(entity);
+            }catch (Exception e) {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
             return CreatedAtAction("GetEmployee", new { id = employee.Id }, employee);
@@ -123,14 +106,13 @@ namespace EmployeeManager.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmployee(long id)
         {
-          
-            var employee = await _logicService.GetByIdAsync(id);
-            if (employee == null) 
-            {
-                return NotFound();
-            }
 
-            await _logicService.DeleteAsync(employee);
+            try {
+                await _logicService.DeleteAsync(id);
+            }catch (Exception e) {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+            
             return NoContent();
         }
     }

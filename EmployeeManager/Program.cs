@@ -3,10 +3,12 @@ using Microsoft.Extensions.DependencyInjection;
 using EmployeeManager.Data;
 using EmployeeManager.Model.LogicServices;
 using EmployeeManager.Model.Interfaces;
-using EmployeeManager.Model;
 using EmployeeManager.DataAccess.Interfaces;
 using EmployeeManager.DataAccess;
 using Microsoft.AspNetCore.Identity;
+using EmployeeManager.Model.Services;
+using EmployeeManager.Model.BaseModel;
+using AutoMapper;
 
 namespace EmployeeManager
 {
@@ -20,6 +22,9 @@ namespace EmployeeManager
                 options.UseSqlServer(builder.Configuration.GetConnectionString("EmployeeManagerContext") ?? throw new InvalidOperationException("Connection string 'EmployeeManagerContext' not found.")));
 
             // Add services to the container.
+
+            builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
             builder.Services.AddScoped<IRepository<Employee>, EmployeeRepository>();
             builder.Services.AddScoped<ILogicService<Employee>, EmployeeLogicService>();
 
@@ -58,7 +63,7 @@ namespace EmployeeManager
 
         public static void InitializeDatabase(IHost app)
         {
-            //todo exception handling
+            
             using (var scope = app.Services.CreateScope()) {
 
                 var services = scope.ServiceProvider;

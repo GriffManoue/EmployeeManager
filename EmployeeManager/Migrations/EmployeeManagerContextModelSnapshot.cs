@@ -22,7 +22,7 @@ namespace EmployeeManager.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("EmployeeManager.Model.Department", b =>
+            modelBuilder.Entity("EmployeeManager.Model.BaseModel.Department", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -46,7 +46,7 @@ namespace EmployeeManager.Migrations
                     b.ToTable("Department");
                 });
 
-            modelBuilder.Entity("EmployeeManager.Model.Entity", b =>
+            modelBuilder.Entity("EmployeeManager.Model.BaseModel.Entity", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -75,11 +75,11 @@ namespace EmployeeManager.Migrations
                     b.UseTphMappingStrategy();
                 });
 
-            modelBuilder.Entity("EmployeeManager.Model.Employee", b =>
+            modelBuilder.Entity("EmployeeManager.Model.BaseModel.Employee", b =>
                 {
-                    b.HasBaseType("EmployeeManager.Model.Entity");
+                    b.HasBaseType("EmployeeManager.Model.BaseModel.Entity");
 
-                    b.Property<long?>("DepartmentId")
+                    b.Property<long>("DepartmentId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("Password")
@@ -108,13 +108,15 @@ namespace EmployeeManager.Migrations
                     b.HasDiscriminator().HasValue("Employee");
                 });
 
-            modelBuilder.Entity("EmployeeManager.Model.Employee", b =>
+            modelBuilder.Entity("EmployeeManager.Model.BaseModel.Employee", b =>
                 {
-                    b.HasOne("EmployeeManager.Model.Department", "Department")
+                    b.HasOne("EmployeeManager.Model.BaseModel.Department", "Department")
                         .WithMany()
-                        .HasForeignKey("DepartmentId");
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("EmployeeManager.Model.Entity", "Supervisor")
+                    b.HasOne("EmployeeManager.Model.BaseModel.Entity", "Supervisor")
                         .WithMany()
                         .HasForeignKey("SupervisorId");
 

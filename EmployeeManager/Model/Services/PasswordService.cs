@@ -1,9 +1,10 @@
-﻿using EmployeeManager.Model.Interfaces;
+﻿using EmployeeManager.Model.BaseModel;
+using EmployeeManager.Model.Interfaces;
 using Microsoft.AspNetCore.Identity;
 
-namespace EmployeeManager.Model
+namespace EmployeeManager.Model.Services
 {
-    public class PasswordService  : IPasswordService<Employee>
+    public class PasswordService : IPasswordService<Employee>
     {
 
         private readonly IPasswordHasher<Employee> _passwordHasher;

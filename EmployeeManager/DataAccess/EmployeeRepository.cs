@@ -1,8 +1,9 @@
 ﻿using EmployeeManager.Data;
 using EmployeeManager.DataAccess.Interfaces;
 using EmployeeManager.Exceptions;
-using EmployeeManager.Model;
+using EmployeeManager.Model.BaseModel;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 using System.Linq.Expressions;
 
 namespace EmployeeManager.DataAccess
@@ -19,80 +20,113 @@ namespace EmployeeManager.DataAccess
 
         public async Task<IEnumerable<Employee>> GetAllAsync()
         {
-            return await _context.Employee.ToListAsync();
+            try
+            {
+                return await _context.Employee.Where(e => e.Active == true).ToListAsync();
+            }
+            catch (ArgumentNullException e)
+            {
+                throw new DataAccessException("The list of employees is null.", e);
+            }
+            catch (OperationCanceledException e)
+            {
+                throw new DataAccessException("The operation was canceled while retrieving the employees.", e);
+            }
+            catch (Exception e)
+            {
+                throw new DataAccessException("An error occurred while retrieving the employees.", e);
+            }
         }
 
         public async Task<Employee> GetByIdAsync(long id)
         {
-            var employee = await _context.Employee.FindAsync(id);
+            Employee employee;
+            try {
 
-            if (employee == null)
-            {
-                throw new EmployeeNotFoundException("An employee with the given id was not found.",id);
+                 employee = await _context.Employee.FindAsync(id);
+                return employee;
+
+            }
+            catch (Exception e) {
+                throw new DataAccessException("An error occurred while retrieving the employee.", e);
             }
 
-            return employee;
+           
         }
 
         public async Task<Employee> InsertAsync(Employee entity)
         {
-            if (EmployeeExists(entity.Id)) {
-            
-                throw new EmployeeAlreadyExistsException("An employee with the given id already exists.", entity.Id);
-            }
-            var employee = _context.Employee.Add(entity);
-            await _context.SaveChangesAsync();
-            return employee.Entity;
-        }
-
-        public async Task UpdateAsync(Employee entity)
-        {
-           
-
-            _context.Entry(entity).State = EntityState.Modified;
-
+            Employee employee;
             try
             {
-                await _context.SaveChangesAsync();
+                employee = (await _context.Employee.AddAsync(entity)).Entity;
+                return employee;
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception e)
             {
-                if (!EmployeeExists(entity.Id))
-                {
-                    throw new EmployeeNotFoundException("An employee with the given id was not found.", entity.Id);
-                }
-                else
-                {
-                    throw new Exception("An error occurred while updating the employee.");
-                }
+                throw new DataAccessException("An error occurred while inserting the employee.", e);
             }
-
-            
+           
+           
         }
 
-        public async Task DeleteAsync(Employee entity)
+        public Employee Update(Employee entity)
         {
-            var employee = await _context.Employee.FindAsync(entity.Id);
-            if (employee == null)
-            {
-                throw new EmployeeNotFoundException("An employee with the given id was not found.", entity.Id);
+            try {
+                _context.Update(entity);
+            }catch (Exception e) {
+                throw new DataAccessException("An error occurred while updating the employee.", e);
             }
+          
+            return entity;
+        }
 
-            _context.Employee.Remove(employee);
-            await _context.SaveChangesAsync();
-        
+        public void Delete(Employee entity)
+        {
+            try {
+                 _context.Employee.Remove(entity);
+            }catch (Exception e) {
+                throw new DataAccessException("An error occurred while deleting the employee.", e);
+            }  
         }
         
 
         public async Task SaveAsync()
         {
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException e)
+            {
+                throw new DataAccessException("A concurrency update error occurred while saving the changes.", e);
+            }
+            catch (DbUpdateException e)
+            {
+                throw new DataAccessException("An update error occurred while saving the changes.", e);
+            }
+            catch (OperationCanceledException e) { 
+            
+                throw new DataAccessException("The operation was canceled while saving the changes.", e);
+            }catch (Exception e)
+            {
+                throw new DataAccessException("An error occurred while saving the changes.", e);
+            }          
         }
 
 
         public async Task<IQueryable<Employee>> Query(Expression<Func<Employee, bool>> predicate)
         {
-            return await Task.FromResult(_context.Employee.Where(predicate));
+            try
+            {
+                return await Task.FromResult(_context.Employee.Where(predicate));
+            }
+            catch (ArgumentNullException e) {
+                throw new DataAccessException("The predicate is null.", e);
+            }catch (Exception e)
+            {
+                throw new DataAccessException("An error occurred while querying the employees.", e);
+            }
         }
 
         public void Dispose()
@@ -111,13 +145,6 @@ namespace EmployeeManager.DataAccess
                 }
                 disposedValue = true;
             }
-        }
-
-        private bool EmployeeExists(long id)
-        {
-            return _context.Employee.Any(e => e.Id == id);
-        }
-
-        
+        }        
     }
 }
