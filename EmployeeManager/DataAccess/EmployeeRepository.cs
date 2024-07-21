@@ -4,6 +4,7 @@ using EmployeeManager.DataAccess.Interfaces;
 using EmployeeManager.Exceptions;
 using EmployeeManager.Model.BaseModel;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace EmployeeManager.DataAccess;
 
@@ -59,7 +60,10 @@ public class EmployeeRepository : IRepository<Employee>
         Employee employee;
         try
         {
-            employee = await _context.Employee.FindAsync(id);
+             employee = await _context.Employee
+           .Include(e => e.Supervisor)
+           .Include(e => e.Department)
+           .FirstOrDefaultAsync(e => e.Id == id);
             return employee;
         }
         catch (Exception e)
@@ -78,6 +82,12 @@ public class EmployeeRepository : IRepository<Employee>
         Employee employee;
         try
         {
+            var department = await _context.Department.FindAsync(entity.Department.Id);
+            var supervisor = await _context.Employee.FindAsync(entity.Supervisor.Id);
+
+            entity.Department = department;
+            entity.Supervisor = supervisor;
+
             employee = (await _context.Employee.AddAsync(entity)).Entity;
             return employee;
         }
@@ -185,7 +195,10 @@ public async Task<Employee> UpdateAsync(Employee entity)
     {
         try
         {
-            return await Task.FromResult(_context.Employee.Where(predicate));
+            return await Task.FromResult( _context.Employee
+            .Include(e => e.Supervisor)
+            .Include(e => e.Department)
+            .Where(predicate));
         }
         catch (ArgumentNullException e)
         {

@@ -79,6 +79,7 @@ public class EmployeeLogicService : ILogicService<Employee>
 
                 await _employeeRepository.InsertAsync(entity);
                 await _employeeRepository.SaveAsync();
+               
                 return entity;
             }
             catch (Exception e)
@@ -140,7 +141,7 @@ public class EmployeeLogicService : ILogicService<Employee>
             {
                 throw new EmployeeNotFoundException("An employee with the given id was not found.", id);
             }
-
+           
             return employee;
         }
         catch (Exception e)

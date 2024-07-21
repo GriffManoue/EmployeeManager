@@ -15,6 +15,9 @@ public class MapperService : Profile
     public MapperService()
     {
         // Maps properties from Employee to EmployeeDTO.
-        CreateMap<Employee, EmployeeDTO>();
+        CreateMap<Employee, EmployeeDTO>()
+            .ForMember(dest => dest.SupervisorId, opt => opt.MapFrom(src => src.Supervisor != null ? src.Supervisor.Id : 0))
+            .ForMember(dest => dest.DepartmentId, opt => opt.MapFrom(src => src.Department.Id));
+
     }
 }
