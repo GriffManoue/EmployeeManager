@@ -1,54 +1,77 @@
 ﻿using EmployeeManager.Model.BaseModel;
 
-namespace EmployeeManager.Data
+namespace EmployeeManager.Data;
+
+/// <summary>
+/// Provides methods to initialize the database with default data.
+/// </summary>
+public class DbInitializer
 {
-    public class DbInitializer
+    /// <summary>
+    /// Initializes the database with default departments and employees if they do not already exist.
+    /// </summary>
+    /// <param name="context">The database context to be used for data initialization.</param>
+    public static void Initialize(EmployeeManagerContext context)
     {
+        // Check if any departments exist, and if so, return immediately to avoid re-initialization.
+        if (context.Department.Any()) return;
 
-        public static void Initialize(EmployeeManagerContext context)
+        // Define a list of default departments to be added to the database.
+        var departments = new Department[]
         {
+            new() { Name = "Human Resources", Abbreviation = "HR", Active = true },
+            new() { Name = "Information Technology", Abbreviation = "IT", Active = true },
+            new() { Name = "Finance", Abbreviation = "FIN", Active = false }
+        };
 
-           if (context.Department.Any()) { return; } 
+        // Add each department to the context for saving.
+        foreach (var d in departments) context.Department.Add(d);
+        // Save the changes to the database.
+        context.SaveChanges();
 
-            var departments = new Department[]
+        // Check if any employees exist, and if so, return immediately to avoid re-initialization.
+        if (context.Employee.Any()) return;
+
+        // Define a list of default employees, including supervisors, to be added to the database.
+        var supervisor1 = new Employee
+        {
+            Name = "John", Active = true, Department = departments[0], Password = "testpassword",
+            PhoneNumber = "06205007447", Position = "manager", Supervisor = null, Username = "John"
+        };
+        var supervisor2 = new Employee
+        {
+            Name = "Jane", Active = true, Department = departments[1], Password = "testpassword",
+            PhoneNumber = "06205007447", Position = "manager", Supervisor = supervisor1, Username = "Jane"
+        };
+
+        var employees = new Employee[]
+        {
+            new()
             {
-                new Department { Name = "Human Resources", Abbreviation = "HR", Active = true  },
-                new Department { Name = "Information Technology", Abbreviation = "IT", Active = true  },
-                new Department { Name = "Finance", Abbreviation = "FIN", Active = false }
-                };
-
-            foreach (Department d in departments)
+                Name = "James", Active = true, Department = departments[0], Password = "testpassword",
+                PhoneNumber = "06205007447", Position = "manager", Supervisor = supervisor2, Username = "James"
+            },
+            new()
             {
-                context.Department.Add(d);
+                Name = "Jill", Active = true, Department = departments[1], Password = "testpassword",
+                PhoneNumber = "06205007447", Position = "manager", Supervisor = supervisor2, Username = "Jill"
+            },
+            new()
+            {
+                Name = "Jack", Active = true, Department = departments[0], Password = "testpassword",
+                PhoneNumber = "06205007447", Position = "manager", Supervisor = supervisor2, Username = "Jack"
+            },
+            new()
+            {
+                Name = "Jenny", Active = false, Department = departments[1], Password = "testpassword",
+                PhoneNumber = "06205007447", Position = "manager", Supervisor = supervisor2, Username = "Jenny"
             }
-            context.SaveChanges();
-        
+        };
 
-            if (context.Employee.Any()) { return; }
-            
+        // Add each employee to the context for saving.
+        foreach (var e in employees) context.Employee.Add(e);
 
-                Employee supervisor1 = new Employee { Name = "John", Active = true, Department = departments[0], Password = "testpassword", PhoneNumber = "06205007447", Position = "manager", Supervisor = null, Username = "John" };
-                Employee supervisor2 = new Employee { Name = "Jane", Active = true, Department = departments[1], Password = "testpassword", PhoneNumber = "06205007447", Position = "manager", Supervisor = supervisor1, Username = "Jane" };
-
-                var employees = new Employee[]
-                {
-                new Employee { Name = "James", Active = true, Department = departments[0], Password = "testpassword", PhoneNumber = "06205007447", Position = "manager", Supervisor = supervisor2, Username = "James" },
-                new Employee { Name = "Jill", Active = true, Department = departments[1], Password = "testpassword", PhoneNumber = "06205007447", Position = "manager", Supervisor = supervisor2, Username = "Jill" },
-                new Employee { Name = "Jack", Active = true, Department = departments[0], Password = "testpassword", PhoneNumber = "06205007447", Position = "manager", Supervisor = supervisor2, Username = "Jack" },
-                new Employee { Name = "Jenny", Active = false, Department = departments[1], Password = "testpassword", PhoneNumber = "06205007447", Position = "manager", Supervisor = supervisor2, Username = "Jenny" },
-
-
-                };
-
-                foreach (Employee e in employees)
-                {
-                    context.Employee.Add(e);
-                }
-
-                context.SaveChanges();
-            
-        }
-
-
+        // Save the changes to the database.
+        context.SaveChanges();
     }
 }

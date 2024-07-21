@@ -1,14 +1,29 @@
 ﻿using EmployeeManager.Model.Interfaces;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
-namespace EmployeeManager.Model.BaseModel
+namespace EmployeeManager.Model.BaseModel;
+
+/// <summary>
+/// Represents a department within the organization.
+/// </summary>
+public class Department : IEntity
 {
-    public class Department : IEntity
-    {
-        public long Id { get; set; }
-        public string Name { get; set; }
-        public bool Active { get; set; }
-        public string Abbreviation { get; set; }
-    }
+    /// <summary>
+    /// Gets or sets the abbreviation for the department.
+    /// </summary>
+    public string Abbreviation { get; set; }
+
+    /// <summary>
+    /// Gets or sets the unique identifier for the department.
+    /// </summary>
+    public long Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the department.
+    /// </summary>
+    public string Name { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the department is active.
+    /// </summary>
+    public bool Active { get; set; }
 }
