@@ -186,6 +186,7 @@ public class EmployeeLogicService : ILogicService<Employee>
         {
             employee = await _employeeRepository.GetByIdAsync(entity.Id);
             var department = await _departmentRepository.GetByIdAsync(entity.Department.Id);
+            var supervisor = await _employeeRepository.GetByIdAsync(entity.Supervisor?.Id ?? 0);
 
             if (employee != null)
             {
@@ -196,10 +197,17 @@ public class EmployeeLogicService : ILogicService<Employee>
                         entity.Department.Id);
                 }
 
+                if (supervisor == null)
+                {
+                    _logger.LogError("The supervisor with the given id was not found.");
+                    throw new EmployeeNotFoundException("The supervisor with the given id was not found.",
+                        entity.Supervisor?.Id ?? 0);
+                }
+
                 if (entity.Password != employee.Password)
                     entity.Password = _passwordService.HashPassword(entity, entity.Password);
 
-                _employeeRepository.Update(entity);
+                await _employeeRepository.UpdateAsync(entity);
                 await _employeeRepository.SaveAsync();
             }
             else

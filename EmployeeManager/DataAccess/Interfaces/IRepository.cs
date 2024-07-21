@@ -28,13 +28,13 @@ public interface IRepository<TData> : IDisposable
     /// <returns>A task that represents the asynchronous operation. The task result contains the inserted entity of type TData.</returns>
     public Task<TData> InsertAsync(TData entity);
 
-    /// <summary>
-    /// Updates an existing entity of type TData.
-    /// </summary>
-    /// <param name="entity">The entity to update.</param>
-    /// <returns>The updated entity of type TData.</returns>
-    public TData Update(TData entity);
-
+   /// <summary>
+/// Asynchronously updates an existing entity of type <typeparamref name="TData"/>.
+/// </summary>
+/// <param name="entity">The entity to be updated.</param>
+/// <returns>A <see cref="Task"/> that represents the asynchronous operation, containing the updated entity of type <typeparamref name="TData"/>.</returns>
+public Task<TData> UpdateAsync(TData entity);
+   
     /// <summary>
     /// Deletes an existing entity of type TData.
     /// </summary>

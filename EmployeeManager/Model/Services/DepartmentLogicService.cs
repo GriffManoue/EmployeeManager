@@ -163,7 +163,7 @@ public class DepartmentLogicService : ILogicService<Department>
 
             if (department != null)
             {
-                _repository.Update(entity);
+                await _repository.UpdateAsync(entity);
                 await _repository.SaveAsync();
             }
             else

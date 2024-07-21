@@ -87,24 +87,41 @@ public class EmployeeRepository : IRepository<Employee>
         }
     }
 
-    /// <summary>
-    /// Updates an existing employee.
-    /// </summary>
-    /// <param name="entity">The employee to update.</param>
-    /// <returns>The updated employee.</returns>
-    public Employee Update(Employee entity)
+   /// <summary>
+/// Updates an existing employee asynchronously.
+/// </summary>
+/// <param name="entity">The employee entity with updated values.</param>
+/// <returns>A <see cref="Task"/> that represents the asynchronous operation, resulting in the updated <see cref="Employee"/> object.</returns>
+/// <remarks>
+/// This method finds an employee by ID and updates its properties with the values from the provided <paramref name="entity"/>.
+/// If the employee is not found, no action is taken. The method encapsulates the update operation within a try-catch block,
+/// throwing a <see cref="DataAccessException"/> with a detailed error message if an exception occurs during the update process.
+/// </remarks>
+public async Task<Employee> UpdateAsync(Employee entity)
+{
+    try
     {
-        try
-        {
-            _context.Update(entity);
-        }
-        catch (Exception e)
-        {
-            throw new DataAccessException("An error occurred while updating the employee.", e);
-        }
+        var employee = await _context.Employee.FindAsync(entity.Id);
+        var department = await _context.Department.FindAsync(entity.Department.Id);
+        var supervisor = await _context.Employee.FindAsync(entity.Supervisor.Id);
 
-        return entity;
+        employee.Department = department;
+        employee.Name = entity.Name;
+        employee.Active = entity.Active;
+        employee.Position = entity.Position;
+        employee.Password = entity.Password;
+        employee.Supervisor = supervisor;
+        employee.Username = entity.Username;
+        employee.PhoneNumber = entity.PhoneNumber;
+        
     }
+    catch (Exception e)
+    {
+        throw new DataAccessException("An error occurred while updating the employee.", e);
+    }
+
+    return entity;
+}
 
     /// <summary>
     /// Deletes a specified employee from the database.

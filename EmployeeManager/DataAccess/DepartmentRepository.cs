@@ -92,23 +92,32 @@ public class DepartmentRepository : IRepository<Department>
     }
 
     /// <summary>
-    /// Updates an existing department.
-    /// </summary>
-    /// <param name="entity">The department to update.</param>
-    /// <returns>The updated department.</returns>
-    public Department Update(Department entity)
+/// Asynchronously updates an existing department in the database.
+/// </summary>
+/// <param name="entity">The department entity with updated values.</param>
+/// <returns>A <see cref="Task"/> that represents the asynchronous operation, resulting in the updated <see cref="Department"/> object.</returns>
+/// <remarks>
+/// This method finds a department by its ID and updates its properties with the values from the provided <paramref name="entity"/>.
+/// If the department is not found, a <see cref="DataAccessException"/> is thrown with a detailed error message.
+/// </remarks>
+/// <exception cref="DataAccessException">Thrown if an error occurs during the update process.</exception>
+public async Task<Department> UpdateAsync(Department entity)
+{
+    try
     {
-        try
-        {
-            _context.Update(entity);
-        }
-        catch (Exception e)
-        {
-            throw new DataAccessException("An error occurred while updating the department.", e);
-        }
-
-        return entity;
+        var department =  await _context.Department.FindAsync(entity.Id);
+        
+        department.Name = entity.Name;
+        department.Active = entity.Active;
+        department.Abbreviation = entity.Abbreviation;
+        
+        return department;
     }
+    catch (Exception e)
+    {
+        throw new DataAccessException("An error occurred while updating the department.", e);
+    }
+}
 
     /// <summary>
     /// Deletes a specified department from the database.
