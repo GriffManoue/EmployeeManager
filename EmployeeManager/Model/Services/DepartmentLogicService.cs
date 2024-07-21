@@ -165,6 +165,7 @@ public class DepartmentLogicService : ILogicService<Department>
             {
                 await _repository.UpdateAsync(entity);
                 await _repository.SaveAsync();
+                return await _repository.GetByIdAsync(entity.Id);
             }
             else
             {
@@ -177,6 +178,6 @@ public class DepartmentLogicService : ILogicService<Department>
             _logger.LogError(e.Message);
         }
 
-        return department;
+        return null;
     }
 }

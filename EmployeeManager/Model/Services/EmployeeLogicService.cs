@@ -209,6 +209,7 @@ public class EmployeeLogicService : ILogicService<Employee>
 
                 await _employeeRepository.UpdateAsync(entity);
                 await _employeeRepository.SaveAsync();
+                return await _employeeRepository.GetByIdAsync(entity.Id);
             }
             else
             {
@@ -221,7 +222,7 @@ public class EmployeeLogicService : ILogicService<Employee>
             _logger.LogError(e.Message);
         }
 
-        return employee;
+        return null;
     }
 
 }
