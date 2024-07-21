@@ -73,7 +73,6 @@ public class EmployeeLogicService : ILogicService<Employee>
 
                 if (department == null)
                 {
-                    _logger.LogError("The department with the given id was not found.");
                     throw new DepartmentNotFoundException("The department with the given id was not found.",
                         entity.Department.Id);
                 }
@@ -85,6 +84,7 @@ public class EmployeeLogicService : ILogicService<Employee>
             catch (Exception e)
             {
                 _logger.LogError(e.Message);
+                throw new DataAccessException("An error occurred while inserting the employee.", e);
             }
         }
         else
@@ -92,8 +92,7 @@ public class EmployeeLogicService : ILogicService<Employee>
             _logger.LogError("An employee with the given id already exists.");
             throw new EmployeeAlreadyExistsException("An employee with the given id already exists.", entity.Id);
         }
-
-        return null;
+        
     }
 
     /// <summary>
@@ -114,13 +113,13 @@ public class EmployeeLogicService : ILogicService<Employee>
             }
             else
             {
-                _logger.LogError("An employee with the given id was not found.");
                 throw new EmployeeNotFoundException("An employee with the given id was not found.", id);
             }
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
+            throw new DataAccessException("An error occurred while deleting the employee.", e);
         }
     }
 
@@ -139,16 +138,18 @@ public class EmployeeLogicService : ILogicService<Employee>
 
             if (employee == null)
             {
-                _logger.LogError("An employee with the given id was not found.");
                 throw new EmployeeNotFoundException("An employee with the given id was not found.", id);
             }
+
+            return employee;
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
+            throw new DataAccessException("An error occurred while retrieving the employee.", e);
         }
 
-        return employee;
+     
     }
 
     /// <summary>
@@ -192,14 +193,12 @@ public class EmployeeLogicService : ILogicService<Employee>
             {
                 if (department == null)
                 {
-                    _logger.LogError("The department with the given id was not found.");
                     throw new DepartmentNotFoundException("The department with the given id was not found.",
                         entity.Department.Id);
                 }
 
                 if (supervisor == null)
                 {
-                    _logger.LogError("The supervisor with the given id was not found.");
                     throw new EmployeeNotFoundException("The supervisor with the given id was not found.",
                         entity.Supervisor?.Id ?? 0);
                 }
@@ -220,9 +219,8 @@ public class EmployeeLogicService : ILogicService<Employee>
         catch (Exception e)
         {
             _logger.LogError(e.Message);
+            throw new DataAccessException("An error occurred while updating the employee.", e);
         }
-
-        return null;
     }
 
 }

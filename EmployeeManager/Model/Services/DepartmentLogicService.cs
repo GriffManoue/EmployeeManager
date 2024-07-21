@@ -60,6 +60,7 @@ public class DepartmentLogicService : ILogicService<Department>
             catch (Exception e)
             {
                 _logger.LogError(e.Message);
+                throw new DataAccessException("An error occurred while adding the department.", e);
             }
         }
         else
@@ -67,8 +68,6 @@ public class DepartmentLogicService : ILogicService<Department>
             _logger.LogError("The department with the given id already exists.", entity.Id);
             throw new DepartmentAlreadyExistsException("The department with the given id already exists.", entity.Id);
         }
-
-        return null;
     }
 
     /// <summary>
@@ -88,13 +87,13 @@ public class DepartmentLogicService : ILogicService<Department>
             }
             else
             {
-                _logger.LogError("The department with the given id was not found.", id);
                 throw new DepartmentNotFoundException("The department with the given id was not found.", id);
             }
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
+            throw new DataAccessException("An error occurred while deleting the department.", e);
         }
     }
 
@@ -116,13 +115,16 @@ public class DepartmentLogicService : ILogicService<Department>
                 _logger.LogError("The department with the given id was not found.", id);
                 throw new DepartmentNotFoundException("The department with the given id was not found.", id);
             }
+
+            return department;
         }
         catch (DepartmentNotFoundException e)
         {
             _logger.LogError(e.Message, id);
+            throw new DepartmentNotFoundException(e.Message, id);
         }
 
-        return department;
+     
     }
 
     /// <summary>
@@ -169,15 +171,15 @@ public class DepartmentLogicService : ILogicService<Department>
             }
             else
             {
-                _logger.LogError("The department with the given id was not found.", entity.Id);
                 throw new DepartmentNotFoundException("The department with the given id was not found.", entity.Id);
             }
         }
         catch (Exception e)
         {
             _logger.LogError(e.Message);
+            throw new DataAccessException("An error occurred while updating the department.", e);
         }
 
-        return null;
+       
     }
 }
